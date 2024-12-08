@@ -239,7 +239,6 @@ class Chatroom {
     }
     _ws = Request.connect(
       url,
-      params: {'apiKey': _apiKey},
       onMessage: (msg) {
         dynamic data;
         switch (msg['type']) {
@@ -298,7 +297,7 @@ class Chatroom {
           _ws = null;
           if (close != null) close();
           if (_retryTimes >= 10) return;
-          reconnect(timeout: timeout, error: error, close: close);
+          reconnect(url: url, timeout: timeout, error: error, close: close);
           _retryTimes++;
         }),
         Timer(Duration(milliseconds: timeout * 100), () {
