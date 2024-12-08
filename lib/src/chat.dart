@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:fishpi/fishpi.dart';
 import 'package:fishpi/src/request.dart';
@@ -152,8 +151,9 @@ class Chat {
       onMessage: (msg) {
         for (ChatListener call in _wsCallbacks[user] ?? []) {
           var type = ChatMsgType.data;
-          if (['chatUnreadCountRefresh', 'newIdleChatMessage'].contains(msg['command'] ?? ''))
+          if (['chatUnreadCountRefresh', 'newIdleChatMessage'].contains(msg['command'] ?? '')) {
             type = ChatMsgType.notice;
+          }
           if (msg['type'] == 'revoke') type = ChatMsgType.revoke;
           if (type != ChatMsgType.notice && msg['command'] != null) return;
           switch (type) {
