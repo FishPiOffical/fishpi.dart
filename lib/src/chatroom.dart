@@ -16,7 +16,7 @@ class Chatroom {
   int _retryTimes = 0;
 
   /// 消息小尾巴
-  ChatSource client = ChatSource(version: packageVersion);
+  final ChatSource client = ChatSource(version: packageVersion);
 
   Redpacket redpacket = Redpacket();
 
@@ -62,7 +62,7 @@ class Chatroom {
   /// 查询聊天室历史消息
   ///
   /// - `page` 消息页码
-  /// - `type` 消息类型，可选值：html、text
+  /// - `type` 消息类型，可选值：html、md
   ///
   /// 返回消息列表
   Future<List<ChatRoomMessage>> more(int page, {String type = ChatContentType.HTML}) async {
@@ -215,13 +215,30 @@ class Chatroom {
     }
   }
 
-  Future reconnect({int timeout = 10, Function(dynamic)? error, Function? close}) async {
+  /// 获取聊天室节点
+  /// 返回节点地址
+  Future<String> getNode() async {
+    try {
+      var rsp = await Request.get('chat-room/node/get', params: {
+        'apiKey': _apiKey,
+      });
+
+      return rsp['data'];
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  Future reconnect({String url = '', int timeout = 10, Function(dynamic)? error, Function? close}) async {
     if (_ws != null) {
       _ws?.steam.cancel();
       _ws?.ws.sink.close();
     }
+    if (url == '') {
+      url = await getNode().catchError((err) => 'chat-room-channel?apiKey=$_apiKey');
+    }
     _ws = Request.connect(
-      'chat-room-channel',
+      url,
       params: {'apiKey': _apiKey},
       onMessage: (msg) {
         dynamic data;
@@ -251,7 +268,7 @@ class Chatroom {
           case ChatRoomMessageType.msg:
             {
               data = ChatRoomMessage.from(msg);
-              msg['type'] = data.type;
+              msg['type'] = data.isRedpacket ? ChatRoomMessageType.redPacket : msg['type'];
               break;
             }
           case ChatRoomMessageType.redPacketStatus:

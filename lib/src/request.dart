@@ -28,26 +28,22 @@ class Request {
     return request(_parseUrl(url, params), method: 'GET');
   }
 
-  static Future<T> post<T>(String url,
-      {Map<String, dynamic>? params, dynamic data}) async {
+  static Future<T> post<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
     return request(_parseUrl(url, params), method: 'POST', data: data);
   }
 
-  static Future<T> delete<T>(String url,
-      {Map<String, dynamic>? params, dynamic data}) async {
+  static Future<T> delete<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
     return request(_parseUrl(url, params), method: 'DELETE', data: data);
   }
 
-  static Future<T> put<T>(String url,
-      {Map<String, dynamic>? params, dynamic data}) async {
+  static Future<T> put<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
     return request(_parseUrl(url, params), method: 'PUT', data: data);
   }
 
   static Future<T> request<T>(String url, {method, data}) async {
     try {
       var dio = Dio();
-      var response = await dio.request('$_protocol://$_domain/$url',
-          data: data, options: Options(method: method));
+      var response = await dio.request('$_protocol://$_domain/$url', data: data, options: Options(method: method));
       if (response.statusCode == 200 || response.statusCode == 201) {
         try {
           if (response.data is Map) {
@@ -73,7 +69,7 @@ class Request {
   }
 
   static WebsocketInfo connect(
-    url, {
+    String url, {
     Map? params,
     required void Function(dynamic msg) onMessage,
     void Function(dynamic error, IOWebSocketChannel ws)? onError,
@@ -88,7 +84,7 @@ class Request {
     }
 
     var ws = IOWebSocketChannel.connect(
-        '${_protocol == 'https' ? 'wss' : 'ws'}://$_domain/$url');
+        url.startsWith('ws') ? url : '${_protocol == 'https' ? 'wss' : 'ws'}://$_domain/$url');
     return WebsocketInfo(
       steam: ws.stream.listen(
         (message) async {
@@ -99,19 +95,14 @@ class Request {
           } catch (e) {}
           onMessage(msg);
         },
-        onDone: onClose == null
-            ? () => print('WebSocket disconnected')
-            : () => onClose(ws),
-        onError: onError == null
-            ? (error) => print('WebSocket error: $error')
-            : (error) => onError(error, ws),
+        onDone: onClose == null ? () => print('WebSocket disconnected') : () => onClose(ws),
+        onError: onError == null ? (error) => print('WebSocket error: $error') : (error) => onError(error, ws),
       ),
       ws: ws,
     );
   }
 
-  static Future<FormData> formData(String key,
-      {Map<String, dynamic>? src, List<String>? files, String? value}) async {
+  static Future<FormData> formData(String key, {Map<String, dynamic>? src, List<String>? files, String? value}) async {
     src ??= {};
     if (files != null) {
       src[key] = await Future.wait(files.map((filePath) async {
