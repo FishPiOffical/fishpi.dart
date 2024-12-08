@@ -139,11 +139,7 @@ class Chat {
   /// - `close` 连接关闭回调
   ///
   /// 返回 WebSocket 连接
-  Future connect(
-      {String user = '_user-channel_',
-      int timeout = 10,
-      Function(dynamic)? error,
-      Function? close}) async {
+  Future connect({String user = '_user-channel_', int timeout = 10, Function(dynamic)? error, Function? close}) async {
     if (_wss[user] != null) {
       _wss[user]?.steam.cancel();
       _wss[user]?.ws.sink.close();
@@ -154,15 +150,10 @@ class Chat {
       channel,
       params: {'apiKey': token, 'toUser': user},
       onMessage: (msg) {
-        try {
-          msg = json.decode(msg);
-        } catch (e) {
-          return;
-        }
         for (ChatListener call in _wsCallbacks[user] ?? []) {
           var type = ChatMsgType.data;
-          if (['chatUnreadCountRefresh', 'newIdleChatMessage']
-              .contains(msg['command'] ?? '')) type = ChatMsgType.notice;
+          if (['chatUnreadCountRefresh', 'newIdleChatMessage'].contains(msg['command'] ?? ''))
+            type = ChatMsgType.notice;
           if (msg['type'] == 'revoke') type = ChatMsgType.revoke;
           if (type != ChatMsgType.notice && msg['command'] != null) return;
           switch (type) {
@@ -230,8 +221,7 @@ class Chat {
       return;
     }
 
-    if (!_wsCallbacks.containsKey(user) ||
-        !_wsCallbacks[user]!.contains(wsCallback)) {
+    if (!_wsCallbacks.containsKey(user) || !_wsCallbacks[user]!.contains(wsCallback)) {
       return;
     }
 
