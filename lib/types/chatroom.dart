@@ -271,7 +271,6 @@ class ChatRoomMessageType {
 
   /// 音乐消息
   static const music = "music";
-
 }
 
 /// 聊天室消息
@@ -608,4 +607,40 @@ class MusicMsg {
   String toString() {
     return "MusicMsg{ type=$type, source=$source, coverURL=$coverURL, title=$title, from=$from }";
   }
+}
+
+class ChatRoomNode {
+  String node;
+  String name;
+  int online;
+
+  ChatRoomNode({
+    required this.node,
+    required this.name,
+    required this.online,
+  });
+
+  ChatRoomNode.from(Map data)
+      : node = data['node'] ?? '',
+        name = data['name'] ?? '',
+        online = data['online'] ?? 0;
+}
+
+class ChatRoomNodeInfo {
+  ChatRoomNode recommend;
+  ChatRoomNode avaliable;
+
+  ChatRoomNodeInfo({
+    required this.recommend,
+    required this.avaliable,
+  });
+
+  ChatRoomNodeInfo.from(Map data)
+      : recommend = ChatRoomNode.from({
+          'node': data['data'],
+          'name': data['msg'],
+          'online':
+              List.from(data['avaliable']).firstWhere((element) => element['node'] == data['data'])?['online'] ?? 0,
+        }),
+        avaliable = ChatRoomNode.from(data['avaliable']);
 }

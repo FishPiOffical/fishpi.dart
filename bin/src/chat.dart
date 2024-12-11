@@ -50,8 +50,7 @@ class ChatCmd implements CommandInstance {
               await Instance.get.chat.send(currentUser, argv[2]);
             } else {
               stdout.write('请输入要发送的内容： ');
-              await Instance.get.chat
-                  .send(currentUser, stdin.readLineSync() ?? '');
+              await Instance.get.chat.send(currentUser, stdin.readLineSync() ?? '');
             }
           } else {
             currentUser = '';
@@ -90,12 +89,17 @@ class ChatCmd implements CommandInstance {
     }
     if (currentUser.isEmpty) {
       print('------ 聊天列表 ------');
-      await Instance.get.chat.list().then(
-          (value) => {for (var item in value.reversed) print(itemView(item))});
+      await Instance.get.chat.list().then((value) => {for (var item in value.reversed) print(itemView(item))});
     } else {
       print('------ 聊天历史 [$currentUser] ------');
-      Instance.get.chat.get(user: currentUser).then(
-          (value) => {for (var item in value.reversed) print(msgView(item))});
+      Instance.get.chat.get(user: currentUser).then((value) => {for (var item in value.reversed) print(msgView(item))});
+      Instance.get.chat.addListener((type, {data, notice, revoke}) {
+        if (type == ChatMsgType.data) {
+          if (data != null) {
+            print(msgView(data));
+          }
+        }
+      });
     }
     return true;
   }

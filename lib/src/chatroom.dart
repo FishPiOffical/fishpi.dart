@@ -217,13 +217,15 @@ class Chatroom {
 
   /// 获取聊天室节点
   /// 返回节点地址
-  Future<String> getNode() async {
+  Future<ChatRoomNodeInfo> getNode() async {
     try {
       var rsp = await Request.get('chat-room/node/get', params: {
         'apiKey': _apiKey,
       });
 
-      return rsp['data'];
+      if (rsp['code'] != 0) return Future.error(rsp['msg']);
+
+      return ChatRoomNodeInfo.from(rsp);
     } catch (e) {
       return Future.error(e);
     }
@@ -235,7 +237,9 @@ class Chatroom {
       _ws?.ws.sink.close();
     }
     if (url == '') {
-      url = await getNode().catchError((err) => 'chat-room-channel?apiKey=$_apiKey');
+      url = await getNode()
+          .then((value) => value.recommend.node)
+          .catchError((err) => 'chat-room-channel?apiKey=$_apiKey');
     }
     _ws = Request.connect(
       url,
