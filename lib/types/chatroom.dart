@@ -628,7 +628,7 @@ class ChatRoomNode {
 
 class ChatRoomNodeInfo {
   ChatRoomNode recommend;
-  ChatRoomNode avaliable;
+  List<ChatRoomNode> avaliable;
 
   ChatRoomNodeInfo({
     required this.recommend,
@@ -640,7 +640,7 @@ class ChatRoomNodeInfo {
           'node': data['data'],
           'name': data['msg'],
           'online':
-              List.from(data['avaliable']).firstWhere((element) => element['node'] == data['data'])?['online'] ?? 0,
+              List.from(data['avaliable']).firstWhere((element) => element['name'] == data['msg'])?['online'] ?? 0,
         }),
-        avaliable = ChatRoomNode.from(data['avaliable']);
+        avaliable = List.from(data['avaliable']).map((element) => ChatRoomNode.from(element)).toList();
 }

@@ -38,9 +38,10 @@ CLI 参数：
 -c, --chat              私聊对象
 -s, --say               私聊内容
     --breezemoon        发送清风明月
--h, --[no-]help
     --page              切换启动页面
                         [user, chatroom (default), chat, breezemoon, article]
+-v, --[no-]version      
+-h, --[no-]help
 ```
 
 进入 CLI 后，输入 `:help` 查看 CLI 内帮助。
