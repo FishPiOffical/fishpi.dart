@@ -38,7 +38,7 @@ class User {
 
       if (rsp['code'] != 0) return Future.error(rsp['msg']);
 
-      return (rsp.data as Map<String, dynamic>).keys.toList();
+      return (rsp['data'] as Map<String, dynamic>).keys.toList();
     } catch (e) {
       return Future.error(e);
     }
@@ -54,7 +54,7 @@ class User {
     try {
       var rsp = await Request.get('user/liveness', params: {'apiKey': token});
 
-      return rsp['liveness'] ?? 0;
+      return rsp['liveness'] ?? 0.0;
     } catch (e) {
       return Future.error(e);
     }
@@ -84,8 +84,7 @@ class User {
       return false;
     }
     try {
-      var rsp = await Request.get('api/activity/is-collected-liveness',
-          params: {'apiKey': token});
+      var rsp = await Request.get('api/activity/is-collected-liveness', params: {'apiKey': token});
 
       return rsp['isCollectedYesterdayLivenessReward'] ?? false;
     } catch (e) {
@@ -101,8 +100,7 @@ class User {
       return 0;
     }
     try {
-      var rsp = await Request.get('activity/yesterday-liveness-reward-api',
-          params: {'apiKey': token});
+      var rsp = await Request.get('activity/yesterday-liveness-reward-api', params: {'apiKey': token});
 
       return rsp['sum'] ?? 0;
     } catch (e) {
@@ -116,8 +114,7 @@ class User {
   /// - `amount` 转账金额
   /// - `memo` 转账备注
   /// 返回 code 0 为成功，失败则有 msg
-  Future<ResponseResult> transfer(
-      String userName, int amount, String memo) async {
+  Future<ResponseResult> transfer(String userName, int amount, String memo) async {
     try {
       var rsp = await Request.post('point/transfer', data: {
         'apiKey': token,
@@ -137,8 +134,7 @@ class User {
   /// - `userOId` 用户 ID
   /// - `follow` 是否关注，默认关注
   /// 返回 code 0 为成功，失败则有 msg
-  Future<ResponseResult> follow(
-      String userOId, {bool follow = true}) async {
+  Future<ResponseResult> follow(String userOId, {bool follow = true}) async {
     try {
       var rsp = await Request.post('${!follow ? 'un' : ''}follow/user', data: {
         'apiKey': token,
@@ -150,5 +146,4 @@ class User {
       return Future.error(e);
     }
   }
-
 }

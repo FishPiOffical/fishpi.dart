@@ -6,8 +6,7 @@ import '../main.dart';
 import 'base.dart';
 
 class UserCmd implements CommandInstance {
-  PrintFn print = (dynamic msg, [bool newLine = true]) =>
-      stdout.write(msg + (newLine ? '\n' : ''));
+  PrintFn print = (dynamic msg, [bool newLine = true]) => stdout.write(msg + (newLine ? '\n' : ''));
 
   UserCmd();
 
@@ -31,16 +30,13 @@ class UserCmd implements CommandInstance {
     if (username == Instance.cfg.config['auth']?['username'] &&
         token == null &&
         Instance.cfg.config['auth']?['token'] != null) {
-      token = (Instance.cfg.config['auth']?['token'] as String)
-          .trim()
-          .replaceAll('\n', '');
+      token = (Instance.cfg.config['auth']?['token'] as String).trim().replaceAll('\n', '');
     }
 
     if (token != null && token.isNotEmpty) {
       Instance.get.token = token;
       var info = await Instance.get.user.info();
-      Instance.cfg.set('auth',
-          {'token': token.replaceAll('\n', ''), 'username': info.userName});
+      Instance.cfg.set('auth', {'token': token.replaceAll('\n', ''), 'username': info.userName});
     } else if (username != null || code) {
       setCurrentPage(CommandPage.user);
 
@@ -111,6 +107,11 @@ class UserCmd implements CommandInstance {
       info = Instance.get.user.current;
     }
 
+    var vip = await Instance.get.vipInfo(info.oId);
+    if (vip.state) {
+      print('${Command.from('#FFD700').color}💎 ${vip.lvCode} (${vip.expiresDate})${Command.restore}\n');
+    }
+
     print('''
 ${Command.bold}${info.allName}${Command.restore} - [${info.isOnline ? '${Command.from('#00FF00').color}在线${Command.restore}' : '${Command.from('#AAAAAA').color}离线${Command.restore}'}]
 ${Command.from('#AAAAAA').color}👤${info.role}${Command.restore}\t${Command.bold}No.${Command.restore}${info.userNo}\t
@@ -124,15 +125,13 @@ ${info.userURL.isEmpty ? '' : '🔗 ${Command.bold}${info.userURL}${Command.rest
 
     print('');
 
-    if (Instance.get.isLogin &&
-        Instance.get.user.current.userName == info.userName) {
-      print('当前活跃度：${await Instance.get.user.liveness()}');
+    if (Instance.get.isLogin && Instance.get.user.current.userName == info.userName) {
+      print('当前活跃度：${await Instance.get.user.liveness().catchError((_) => 0.0)}\n');
     }
     return false;
   }
 
-  Future<bool> login(
-      [String? username, String? passwd, bool code = true]) async {
+  Future<bool> login([String? username, String? passwd, bool code = true]) async {
     String mfaCode = '';
     Console console = Console();
 
@@ -151,10 +150,8 @@ ${info.userURL.isEmpty ? '' : '🔗 ${Command.bold}${info.userURL}${Command.rest
                   console.write('\b \b');
                 }
               } else {
-                console.write(
-                    text.replaceAllMapped(RegExp(r'.'), (match) => '\b'));
-                console
-                    .write(text.replaceAllMapped(RegExp(r'.'), (match) => '*'));
+                console.write(text.replaceAllMapped(RegExp(r'.'), (match) => '\b'));
+                console.write(text.replaceAllMapped(RegExp(r'.'), (match) => '*'));
               }
             },
           ) ??
@@ -162,8 +159,7 @@ ${info.userURL.isEmpty ? '' : '🔗 ${Command.bold}${info.userURL}${Command.rest
     }
     if (code) {
       print('二次验证码: ', false);
-      mfaCode =
-          console.readLine(cancelOnBreak: true, cancelOnEscape: true) ?? '';
+      mfaCode = console.readLine(cancelOnBreak: true, cancelOnEscape: true) ?? '';
     }
     try {
       await Instance.get

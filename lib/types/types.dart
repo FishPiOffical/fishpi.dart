@@ -32,11 +32,7 @@ class LoginData {
         passwd = data['passwd'] ?? '',
         mfaCode = data['mfaCode'];
 
-  toJson() => {
-        'nameOrEmail': username,
-        'userPassword': passwd.toMD5(),
-        'mfaCode': mfaCode ?? ''
-      };
+  toJson() => {'nameOrEmail': username, 'userPassword': passwd.toMD5(), 'mfaCode': mfaCode ?? ''};
 
   @override
   toString() {
@@ -71,12 +67,7 @@ class PreRegisterInfo {
         invitecode = data['invitecode'] ?? '',
         captcha = data['captcha'] ?? '';
 
-  toJson() => {
-        'userName': username,
-        'userPhone': phone,
-        'invitecode': invitecode ?? '',
-        'captcha': captcha
-      };
+  toJson() => {'userName': username, 'userPhone': phone, 'invitecode': invitecode ?? '', 'captcha': captcha};
 
   @override
   toString() {
@@ -260,6 +251,59 @@ class UserLite {
   toString() {
     return 'UserLite{userNickname: $userNickname, userName: $userName}';
   }
+}
+
+class UserVipInfo {
+  bool jointVip;
+  String color;
+  bool underline;
+  bool metal;
+  int autoCheckin;
+  bool bold;
+  String oId;
+  bool state;
+  String userId;
+  String lvCode;
+  int expiresAt;
+  int createdAt;
+  int updatedAt;
+
+  get isVip => state;
+  get expiresDate => DateTime.fromMillisecondsSinceEpoch(expiresAt);
+  get createdDate => DateTime.fromMillisecondsSinceEpoch(createdAt);
+  get updatedDate => DateTime.fromMillisecondsSinceEpoch(updatedAt);
+  get VipName => lvCode.replaceAll('_YEAR', '(包年)').replaceAll('_MONTH', '(包月)');
+
+  UserVipInfo({
+    this.jointVip = false,
+    this.color = '',
+    this.underline = false,
+    this.metal = false,
+    this.autoCheckin = 0,
+    this.bold = false,
+    this.oId = '',
+    this.state = false,
+    this.userId = '',
+    this.lvCode = '',
+    this.expiresAt = 0,
+    this.createdAt = 0,
+    this.updatedAt = 0,
+  });
+
+  UserVipInfo.from(Map<dynamic, dynamic> data)
+      : jointVip = data['jointVip'] ?? false,
+        color = data['color'] ?? '',
+        underline = data['underline'] ?? false,
+        metal = data['metal'] ?? false,
+        autoCheckin = data['autoCheckin'] ?? 0,
+        bold = data['bold'] ?? false,
+        oId = data['oId'] ?? '',
+        state = (data['state'] ?? 0) == 1,
+        userId = data['userId'] ?? '',
+        lvCode = data['lvCode'] ?? '',
+        expiresAt = data['expiresAt'] ?? 0,
+        createdAt = data['createdAt'] ?? 0,
+        updatedAt = data['updatedAt'] ?? 0;
 }
 
 /// 举报数据类型

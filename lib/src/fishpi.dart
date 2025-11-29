@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fishpi/fishpi.dart';
@@ -181,6 +182,35 @@ class Fishpi {
     }
   }
 
+  /// 获取用户VIP信息
+  ///
+  /// 返回用户VIP信息
+  Future<UserVipInfo> vipInfo(userId) async {
+    try {
+      var rsp = await Request.get(
+        'api/membership/$userId',
+      );
+
+      if ((rsp['code'] ?? 0) != 0) return Future.error(rsp['msg']);
+
+      dynamic data = json.decode(rsp['data']['configJson'] ?? 'null') ?? {};
+
+      data['state'] = rsp['data']['state'];
+      if (data['state'] == 1) {
+        data['oId'] = rsp['data']['oId'];
+        data['userId'] = rsp['data']['userId'];
+        data['lvCode'] = rsp['data']['lvCode'];
+        data['expiresAt'] = rsp['data']['expiresAt'];
+        data['createdAt'] = rsp['data']['createdAt'];
+        data['updatedAt'] = rsp['data']['updatedAt'];
+      }
+
+      return UserVipInfo.from(data);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
   /// 举报
   ///
   /// - `data` 举报数据
@@ -203,8 +233,7 @@ class Fishpi {
   /// - `pageSize` 每页数量
   Future<List<Log>> log({int page = 1, int pageSize = 30}) async {
     try {
-      var rsp = await Request.get('logs/more',
-          params: {'page': page, 'pageSize': pageSize});
+      var rsp = await Request.get('logs/more', params: {'page': page, 'pageSize': pageSize});
 
       return List.from(rsp['data'] ?? []).map((e) => Log.from(e)).toList();
     } catch (e) {
@@ -225,8 +254,7 @@ class Fishpi {
       if (notExist.isNotEmpty) {
         return Future.error('File not exist: ${notExist.join(',')}');
       }
-      var data = await Request.formData('file[]',
-          files: files, src: {"apiKey": _apiKey});
+      var data = await Request.formData('file[]', files: files, src: {"apiKey": _apiKey});
       var rsp = await Request.post('upload', data: data);
 
       if (rsp['code'] != 0) return Future.error(rsp['msg']);
