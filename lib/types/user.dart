@@ -14,26 +14,38 @@ class MetalAttr {
   /// 文字颜色
   String fontcolor;
 
+  /// 缩放
+  double scale;
+
+  /// 版本号
+  double ver;
+
   MetalAttr({
     this.url = '',
     this.backcolor = '',
     this.fontcolor = '',
+    this.scale = 0.79,
+    this.ver = 0.1,
   });
 
   MetalAttr.from(Map<String, dynamic>? attr)
       : url = attr?['url'] ?? '',
         backcolor = attr?['backcolor'] ?? '',
-        fontcolor = attr?['fontcolor'] ?? '';
+        fontcolor = attr?['fontcolor'] ?? '',
+        scale = attr?['scale'] ?? 0.79,
+        ver = attr?['ver'] ?? 0.1;
 
   toJson() => {
         'url': url,
         'backcolor': backcolor,
         'fontcolor': fontcolor,
+        'scale': scale,
+        'ver': ver,
       };
 
   @override
   toString() {
-    return 'url=$url&backcolor=$backcolor&fontcolor=$fontcolor';
+    return 'url=$url&backcolor=$backcolor&fontcolor=$fontcolor&scale=$scale&ver=$ver';
   }
 }
 

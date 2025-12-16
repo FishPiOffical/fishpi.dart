@@ -18,7 +18,7 @@ class ArticlePost {
   /// 是否允许评论
   bool commentable;
 
-  /// 是否帖子关注者
+  /// 是否通知帖子关注者
   bool notifyFollowers;
 
   /// 帖子类型，ArticleType
