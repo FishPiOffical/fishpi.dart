@@ -277,3 +277,48 @@ class UserInfo {
     return "{ oId=$oId, userNo=$userNo, userName=$userName, userNickname=$nickname, userURL=$userURL, userCity=$city, userIntro=$intro, userOnlineFlag=$isOnline, userPoint=$point, userRole=$role, userAppRole=$appRole, userAvatarURL=$avatarURL, cardBg=$cardBg, followingUserCount=$followingCnt, followerCount=$followerCnt, onlineMinute=$onlineMinute, canFollow=$canFollow, allMetalOwned=$allMetals, sysMetal=$sysMetal }";
   }
 }
+
+class UpdateUserParams {
+  /// 昵称
+  String? userNickname;
+
+  /// 用户标签
+  String? userTags;
+
+  /// 个人主页 URL
+  String? userURL;
+
+  /// 个性签名
+  String? userIntro;
+
+  /// MBTI
+  String? mbti;
+
+  UpdateUserParams({
+    this.userNickname,
+    this.userTags,
+    this.userURL,
+    this.userIntro,
+    this.mbti,
+  });
+
+  UpdateUserParams.from(Map data)
+      : userNickname = data['userNickname'],
+        userTags = data['userTags'],
+        userURL = data['userURL'],
+        userIntro = data['userIntro'],
+        mbti = data['mbti'];
+
+  toJson() => {
+        "userNickname": userNickname,
+        "userTags": userTags,
+        "userURL": userURL,
+        "userIntro": userIntro,
+        "mbti": mbti,
+      };
+
+  @override
+  toString() {
+    return "{ userNickname=$userNickname, userTags=$userTags, userURL=$userURL, userIntro=$userIntro, mbti=$mbti }";
+  }
+}

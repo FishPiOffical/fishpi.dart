@@ -146,4 +146,38 @@ class User {
       return Future.error(e);
     }
   }
+
+  /// 更新用户头像
+  ///
+  /// - `userAvatarURL` 用户头像 URL
+  /// 返回 code 0 为成功，失败则有 msg
+  Future<ResponseResult> updateAvatar(String userAvatarURL) async {
+    try {
+      var rsp = await Request.post('api/settings/avatar', data: {
+        'apiKey': token,
+        'userAvatarURL': userAvatarURL,
+      });
+
+      return ResponseResult.from(rsp);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 更新用户信息
+  ///
+  /// - `data` 用户信息
+  /// 返回 code 0 为成功，失败则有 msg
+  Future<ResponseResult> updateUserInfo(UpdateUserParams data) async {
+    try {
+      var rsp = await Request.post('api/settings/avatar', data: {
+        'apiKey': token,
+        ...data.toJson(),
+      });
+
+      return ResponseResult.from(rsp);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
 }
