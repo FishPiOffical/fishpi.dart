@@ -206,6 +206,37 @@ class ArticleCmd implements CommandInstance {
             print('打赏失败：$err');
           });
         }
+      case ':vote':
+        {
+          if (_currentPage != ArticlePage.detail) break;
+          if (!Instance.get.isLogin) {
+            print('请先登录。');
+            break;
+          }
+          if (argv.length < 2) {
+            stdout.write('要点赞这篇文章吗？[y/N]：');
+            var confirm = stdin.readLineSync() ?? '';
+            if (confirm.toLowerCase() != 'y') break;
+            await Instance.get.article.vote(_currentDetail.oId, true).then((value) {
+              page(':page article ${_currentDetail.oId}');
+            }).catchError((err) {
+              print('点赞失败：$err');
+            });
+          } else {
+            var commentIndex = int.parse(argv[1]);
+            if (commentIndex <= 0 || commentIndex > _currentDetail.comments.length) {
+              print('找不到对应编号的评论');
+              break;
+            }
+            var comment = _currentDetail.comments[commentIndex - 1];
+            await Instance.get.comment.vote(comment.oId, true).then((value) {
+              page(':page article ${_currentDetail.oId}');
+            }).catchError((err) {
+              print('点赞失败：$err');
+            });
+          }
+          break;
+        }
       case ':help':
         {
           print('''${Command.bold}文章模块命令${Command.restore}
