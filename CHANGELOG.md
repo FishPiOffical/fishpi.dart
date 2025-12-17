@@ -1,3 +1,15 @@
+## 1.0.27
+
+### Update
+- 修改 ArticlePost 类中 notifyFollowers 字段注释
+- 更新文章和用户勋章类型定义，在 MetalAttr 类中新增 scale 和 ver 属性
+- 命令行工具增加文字评论点赞功能
+
+## 1.0.26
+
+### Added
+- 添加 VIP 信息查询接口；
+
 ## 1.0.25
 
 ### Fixed
