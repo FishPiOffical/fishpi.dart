@@ -170,12 +170,87 @@ class User {
   /// 返回 code 0 为成功，失败则有 msg
   Future<ResponseResult> updateUserInfo(UpdateUserParams data) async {
     try {
-      var rsp = await Request.post('api/settings/avatar', data: {
-        'apiKey': token,
-        ...data.toJson(),
+      var rsp = await Request.post('api/settings/avatar?apiKey=$token', data: data.toJson());
+
+      return ResponseResult.from(rsp);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 配置 VIP 信息
+  ///
+  /// - `config` VIP 配置参数
+  /// 返回 code 0 为成功，失败则有 msg
+  Future<ResponseResult> configMembership(MembershipConfig config) async {
+    try {
+      var rsp = await Request.put('api/membership/config?apiKey=$token', data: {
+        'configJson': config.toJson(),
       });
 
       return ResponseResult.from(rsp);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 获取VIP套餐列表
+  ///
+  /// 返回所有可购买的VIP套餐列表（月卡/年卡）
+  Future<List<MembershipLevel>> getMembershipLevels() async {
+    try {
+      var rsp = await Request.get('api/membership/levels', params: {'apiKey': token});
+
+      if (rsp['code'] != 0) return Future.error(rsp['msg']);
+
+      return (rsp['data'] as List).map((e) => MembershipLevel.from(e)).toList();
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 购买VIP会员
+  ///
+  /// - `oId` 套餐ID，来自 getMembershipLevels
+  /// 返回 code 0 为成功，失败则有 msg
+  Future<ResponseResult> openMembership(int oId) async {
+    try {
+      var rsp = await Request.post('api/membership/open?apiKey=$token', data: {
+        'oId': oId,
+      });
+
+      return ResponseResult.from(rsp);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 获取所有VIP用户配置列表
+  ///
+  /// 返回所有VIP用户配置列表（已过滤过期用户）
+  Future<List<MembershipUserConfig>> getMembershipConfigs() async {
+    try {
+      var rsp = await Request.get('api/memberships/configs', params: {'apiKey': token});
+
+      if (rsp['code'] != 0) return Future.error(rsp['msg']);
+
+      return (rsp['data'] as List).map((e) => MembershipUserConfig.from(e)).toList();
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  /// 获取指定用户的VIP信息
+  ///
+  /// - `userId` 用户ID 或 oId
+  /// 返回用户的VIP信息
+  Future<MembershipInfo> getMembershipInfo(String userId) async {
+    try {
+      var rsp = await Request.get('api/membership/$userId', params: {'apiKey': token});
+
+      if (rsp['code'] != 0) return Future.error(rsp['msg']);
+
+      return MembershipInfo.from(rsp['data']);
     } catch (e) {
       return Future.error(e);
     }

@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:convert';
+
 import 'package:fishpi/src/request.dart';
 import 'package:fishpi/src/utils.dart';
 
@@ -320,5 +322,205 @@ class UpdateUserParams {
   @override
   toString() {
     return "{ userNickname=$userNickname, userTags=$userTags, userURL=$userURL, userIntro=$userIntro, mbti=$mbti }";
+  }
+}
+
+/// VIP 套餐信息
+class MembershipLevel {
+  /// 套餐ID
+  int oId;
+
+  /// 套餐代码，如 VIP1_MONTH、VIP2_YEAR
+  String lvCode;
+
+  /// 套餐名称，如"尝鲜版"、"基础版"
+  String lvName;
+
+  /// 价格（积分）
+  int price;
+
+  /// 时长类型：月卡 或 年卡
+  String durationType;
+
+  /// 功能列表（JSON字符串）
+  String benefits;
+
+  MembershipLevel({
+    required this.oId,
+    required this.lvCode,
+    required this.lvName,
+    required this.price,
+    required this.durationType,
+    required this.benefits,
+  });
+
+  MembershipLevel.from(Map<String, dynamic> data)
+      : oId = data['oId'] ?? 0,
+        lvCode = data['lvCode'] ?? '',
+        lvName = data['lvName'] ?? '',
+        price = data['price'] ?? 0,
+        durationType = data['durationType'] ?? '',
+        benefits = data['benefits'] ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'oId': oId,
+        'lvCode': lvCode,
+        'lvName': lvName,
+        'price': price,
+        'durationType': durationType,
+        'benefits': benefits,
+      };
+
+  @override
+  toString() {
+    return "{ oId=$oId, lvCode=$lvCode, lvName=$lvName, price=$price, durationType=$durationType, benefits=$benefits }";
+  }
+}
+
+/// 用户 VIP 信息
+class MembershipInfo {
+  /// 用户ID
+  String oId;
+
+  /// VIP等级和类型，如 VIP2_MONTH
+  String lvCode;
+
+  /// 状态：0=非VIP，非0=VIP状态
+  int state;
+
+  /// 过期时间 ISO格式
+  String expiresAt;
+
+  /// 昵称样式配置JSON
+  String configJson;
+
+  MembershipInfo({
+    required this.oId,
+    required this.lvCode,
+    required this.state,
+    required this.expiresAt,
+    required this.configJson,
+  });
+
+  MembershipInfo.from(Map<String, dynamic> data)
+      : oId = data['oId'] ?? '',
+        lvCode = data['lvCode'] ?? '',
+        state = data['state'] ?? 0,
+        expiresAt = data['expiresAt'] ?? '',
+        configJson = data['configJson'] ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'oId': oId,
+        'lvCode': lvCode,
+        'state': state,
+        'expiresAt': expiresAt,
+        'configJson': configJson,
+      };
+
+  @override
+  toString() {
+    return "{ oId=$oId, lvCode=$lvCode, state=$state, expiresAt=$expiresAt, configJson=$configJson }";
+  }
+}
+
+/// VIP 用户配置信息（用于批量查询）
+class MembershipUserConfig {
+  /// 用户ID
+  String userId;
+
+  /// 昵称样式配置JSON字符串
+  String configJson;
+
+  /// 解析后的配置对象
+  MembershipConfig? config;
+
+  MembershipUserConfig({
+    required this.userId,
+    required this.configJson,
+    this.config,
+  });
+
+  MembershipUserConfig.from(Map<String, dynamic> data)
+      : userId = data['userId'] ?? '',
+        configJson = data['configJson'] ?? '',
+        config = _parseConfig(data['configJson']);
+
+  /// 解析配置JSON字符串
+  static MembershipConfig? _parseConfig(String? jsonStr) {
+    if (jsonStr == null || jsonStr.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+      return MembershipConfig.from(decoded);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'configJson': configJson,
+      };
+
+  @override
+  toString() {
+    return "{ userId=$userId, configJson=$configJson, config=$config }";
+  }
+}
+
+/// VIP 配置参数
+class MembershipConfig {
+  /// 是否开启联合会员
+  bool? jointVip;
+
+  /// 颜色主题
+  String? color;
+
+  /// 是否显示下划线
+  bool? underline;
+
+  /// 是否显示徽章
+  bool? metal;
+
+  /// 自动签到（0 关闭，1 开启）
+  int? autoCheckin;
+
+  /// 是否加粗
+  bool? bold;
+
+  /// 免签卡数量
+  int? checkinCard;
+
+  MembershipConfig({
+    this.jointVip,
+    this.color,
+    this.underline,
+    this.metal,
+    this.autoCheckin,
+    this.bold,
+    this.checkinCard,
+  });
+
+  MembershipConfig.from(Map<String, dynamic> data)
+      : jointVip = data['jointVip'],
+        color = data['color'],
+        underline = data['underline'],
+        metal = data['metal'],
+        autoCheckin = data['autoCheckin'],
+        bold = data['bold'],
+        checkinCard = data['checkinCard'];
+
+  Map<String, dynamic> toJson() => {
+        if (jointVip != null) 'jointVip': jointVip,
+        if (color != null) 'color': color,
+        if (underline != null) 'underline': underline,
+        if (metal != null) 'metal': metal,
+        if (autoCheckin != null) 'autoCheckin': autoCheckin,
+        if (bold != null) 'bold': bold,
+        if (checkinCard != null) 'checkinCard': checkinCard,
+      };
+
+  @override
+  toString() {
+    return "{ jointVip=$jointVip, color=$color, underline=$underline, metal=$metal, autoCheckin=$autoCheckin, bold=$bold, checkinCard=$checkinCard }";
   }
 }
