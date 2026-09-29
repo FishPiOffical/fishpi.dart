@@ -241,25 +241,62 @@ class Fishpi {
     }
   }
 
+  /// 获取上传票据
+  ///
+  /// 返回上传票据信息，包括 ticket、uploadURL 和 expiresIn。
+  Future<UploadTicket> getUploadTicket() async {
+    try {
+      var rsp = await Request.post(
+        'api/rhypic/upload-ticket',
+        params: {'apiKey': _apiKey},
+      );
+
+      if (rsp['code'] != 0) return Future.error(rsp['msg'] ?? '获取上传票据失败');
+
+      return UploadTicket.from(Map<String, dynamic>.from(rsp['data'] ?? {}));
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
   /// 上传文件
   ///
-  /// - `files` 文件路径
+  /// - `files` 要上传的文件列表，支持文件路径 String 或 File 对象
   ///
   /// 返回上传结果
-  Future<UploadResult> upload(List<String> files) async {
+  Future<UploadResult> upload(List<dynamic> files) async {
     try {
       var notExist = files.where(
-        (element) => !File(element).existsSync(),
+        (element) {
+          if (element is File) return !element.existsSync();
+          if (element is String) return !File(element).existsSync();
+          return false;
+        },
       );
       if (notExist.isNotEmpty) {
-        return Future.error('File not exist: ${notExist.join(',')}');
+        return Future.error(
+          'File not exist: ${notExist.map((e) => e is File ? e.path : e.toString()).join(',')}',
+        );
       }
-      var data = await Request.formData('file[]', files: files, src: {"apiKey": _apiKey});
-      var rsp = await Request.post('upload', data: data);
 
-      if (rsp['code'] != 0) return Future.error(rsp['msg']);
+      var data = await Request.formData('file', files: files);
 
-      return UploadResult.from(rsp['data']);
+      var ticketInfo = await getUploadTicket();
+      var uploadURL = ticketInfo.uploadURL.endsWith('/')
+          ? ticketInfo.uploadURL.substring(0, ticketInfo.uploadURL.length - 1)
+          : ticketInfo.uploadURL;
+
+      var rsp = await Request.post(
+        '$uploadURL/api/v1/files',
+        data: data,
+        headers: {
+          'Authorization': 'Bearer ${ticketInfo.ticket}',
+        },
+      );
+
+      if (rsp['code'] != 0) return Future.error(rsp['msg'] ?? '上传失败');
+
+      return UploadResult.from(Map<String, dynamic>.from(rsp['data'] ?? {}));
     } catch (e) {
       return Future.error(e);
     }

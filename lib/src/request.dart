@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:web_socket_channel/io.dart';
@@ -24,26 +25,29 @@ class Request {
     return url;
   }
 
-  static Future<T> get<T>(String url, {Map<String, dynamic>? params}) async {
-    return request(_parseUrl(url, params), method: 'GET');
+  static Future<T> get<T>(String url, {Map<String, dynamic>? params, Map<String, dynamic>? headers}) async {
+    return request(_parseUrl(url, params), method: 'GET', headers: headers);
   }
 
-  static Future<T> post<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
-    return request(_parseUrl(url, params), method: 'POST', data: data);
+  static Future<T> post<T>(String url, {Map<String, dynamic>? params, dynamic data, Map<String, dynamic>? headers}) async {
+    return request(_parseUrl(url, params), method: 'POST', data: data, headers: headers);
   }
 
-  static Future<T> delete<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
-    return request(_parseUrl(url, params), method: 'DELETE', data: data);
+  static Future<T> delete<T>(String url, {Map<String, dynamic>? params, dynamic data, Map<String, dynamic>? headers}) async {
+    return request(_parseUrl(url, params), method: 'DELETE', data: data, headers: headers);
   }
 
-  static Future<T> put<T>(String url, {Map<String, dynamic>? params, dynamic data}) async {
-    return request(_parseUrl(url, params), method: 'PUT', data: data);
+  static Future<T> put<T>(String url, {Map<String, dynamic>? params, dynamic data, Map<String, dynamic>? headers}) async {
+    return request(_parseUrl(url, params), method: 'PUT', data: data, headers: headers);
   }
 
-  static Future<T> request<T>(String url, {method, data}) async {
+  static Future<T> request<T>(String url, {method, data, Map<String, dynamic>? headers}) async {
     try {
       var dio = Dio();
-      var response = await dio.request('$_protocol://$_domain/$url', data: data, options: Options(method: method));
+      var requestUrl = url.startsWith('http://') || url.startsWith('https://')
+          ? url
+          : '$_protocol://$_domain/$url';
+      var response = await dio.request(requestUrl, data: data, options: Options(method: method, headers: headers));
       if (response.statusCode == 200 || response.statusCode == 201) {
         try {
           if (response.data is Map) {
@@ -63,6 +67,14 @@ class Request {
       } else {
         return Future.error('HTTP错误');
       }
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        var respData = e.response!.data;
+        if (respData is Map && respData['msg'] != null) {
+          return Future.error(respData['msg']);
+        }
+      }
+      return Future.error(e);
     } catch (e) {
       return Future.error(e);
     }
@@ -103,11 +115,17 @@ class Request {
     );
   }
 
-  static Future<FormData> formData(String key, {Map<String, dynamic>? src, List<String>? files, String? value}) async {
+  static Future<FormData> formData(String key, {Map<String, dynamic>? src, List<dynamic>? files, String? value}) async {
     src ??= {};
     if (files != null) {
-      src[key] = await Future.wait(files.map((filePath) async {
-        return await MultipartFile.fromFile(filePath);
+      src[key] = await Future.wait(files.map((f) async {
+        if (f is MultipartFile) {
+          return f;
+        } else if (f is File) {
+          return await MultipartFile.fromFile(f.path);
+        } else {
+          return await MultipartFile.fromFile(f.toString());
+        }
       }));
     } else {
       src[key] = value;

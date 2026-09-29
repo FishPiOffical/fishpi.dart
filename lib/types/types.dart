@@ -170,9 +170,9 @@ class UploadResult {
 
   UploadResult.from(Map<String, dynamic> map)
       : errs = List<String>.from(map['errFiles'] ?? []),
-        success = ((map['succMap'] ?? {}) as Map<String, dynamic>)
+        success = Map<String, dynamic>.from(map['succMap'] ?? {})
             .entries
-            .map((entry) => FileInfo(filename: entry.key, url: entry.value))
+            .map((entry) => FileInfo(filename: entry.key, url: entry.value?.toString() ?? ''))
             .toList();
 
   toJson() => {
@@ -188,6 +188,58 @@ class UploadResult {
   @override
   toString() {
     return "UploadResult{ errFiles=${errs.join(',')}, succFiles=$success }";
+  }
+}
+
+/// JS/TS 兼容别名
+typedef IUploadInfo = UploadResult;
+
+/// 上传票据信息
+class UploadTicket {
+  /// 上传票据
+  String ticket;
+
+  /// 上传服务地址
+  String uploadURL;
+
+  /// 票据有效期（秒）
+  int expiresIn;
+
+  UploadTicket({
+    this.ticket = '',
+    this.uploadURL = '',
+    this.expiresIn = 0,
+  });
+
+  UploadTicket.from(Map<String, dynamic> data)
+      : ticket = data['ticket']?.toString() ?? '',
+        uploadURL = data['uploadURL']?.toString() ?? '',
+        expiresIn = data['expiresIn'] is int
+            ? data['expiresIn']
+            : int.tryParse(data['expiresIn']?.toString() ?? '') ?? 0;
+
+  dynamic operator [](String key) {
+    switch (key) {
+      case 'ticket':
+        return ticket;
+      case 'uploadURL':
+        return uploadURL;
+      case 'expiresIn':
+        return expiresIn;
+      default:
+        return null;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+        'ticket': ticket,
+        'uploadURL': uploadURL,
+        'expiresIn': expiresIn,
+      };
+
+  @override
+  toString() {
+    return "UploadTicket{ticket=$ticket, uploadURL=$uploadURL, expiresIn=$expiresIn}";
   }
 }
 
